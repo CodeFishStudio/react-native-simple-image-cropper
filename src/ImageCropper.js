@@ -98,9 +98,9 @@ class ImageCropper extends PureComponent {
     };
 
     return new Promise((resolve, reject) =>
-      ImageEditor.cropImage(imageUri, cropData)
-        .then(resolve)
-        .catch(reject),
+        ImageEditor.cropImage(imageUri, cropData)
+            .then(resolve)
+            .catch(reject),
     );
   };
 
@@ -121,25 +121,36 @@ class ImageCropper extends PureComponent {
     Image.getSize(imageUri, (width, height) => {
       const { setCropperParams, cropAreaWidth, cropAreaHeight } = this.props;
 
+      let actualWidth = 0;
+      let actualHeight = 0;
+
+      if(this.props.imageWidth && this.props.imageHeight) {
+        actualWidth = this.props.imageWidth;
+        actualHeight = this.props.imageHeight;
+      } else {
+        actualWidth = width;
+        actualHeight = height;
+      }
+
       const srcSize = { w: width, h: height };
       const fittedSize = { w: 0, h: 0 };
       let scale = 1.0001;
 
-      if (width > height) {
-        const ratio = w / height;
-        fittedSize.w = width * ratio;
+      if (actualWidth > actualHeight) {
+        const ratio = w / actualHeight;
+        fittedSize.w = actualWidth * ratio;
         fittedSize.h = w;
-      } else if (width < height) {
-        const ratio = w / width;
+      } else if (actualWidth < actualHeight) {
+        const ratio = w / actualWidth;
         fittedSize.w = w;
-        fittedSize.h = height * ratio;
-      } else if (width === height) {
+        fittedSize.h = actualHeight * ratio;
+      } else if (actualWidth === actualHeight) {
         fittedSize.w = w;
         fittedSize.h = w;
       }
 
       if (cropAreaWidth < cropAreaHeight || cropAreaWidth === cropAreaHeight) {
-        if (width < height) {
+        if (actualWidth < actualHeight) {
           if (fittedSize.h < cropAreaHeight) {
             scale = Math.ceil((cropAreaHeight / fittedSize.h) * 10) / 10 + 0.0001;
           } else {
@@ -152,23 +163,49 @@ class ImageCropper extends PureComponent {
 
       scale = scale < 1 ? 1.0001 : scale;
 
+      var ratio = actualWidth / actualHeight;
+      var newScale = ratio;
+
+      //Portrait image
+      if (ratio < 1.0) {
+        const maximumHeight = (5 / 4) * actualWidth;
+
+        if (ratio < 0.8) {
+          newScale = actualWidth / maximumHeight;
+        }
+      }
+      //Lanscape image
+      else {
+        const maximumWidth = (4 / 5) * actualHeight;
+
+        if (ratio > 1.25) {
+          newScale = maximumWidth / actualHeight;
+        }
+      }
+
+      console.log('actualWidth', actualWidth);
+      console.log('actualHeight', actualHeight);
+      // console.log('maximumHeight', maximumHeight);
+      console.log('ratio: ', ratio);
+      console.log('newScale: ', newScale);
+
       this.setState(
-        prevState => ({
-          ...prevState,
-          srcSize,
-          fittedSize,
-          minScale: scale,
-          loading: false,
-        }),
-        () => {
-          this.imageZoom.current.centerOn({
-            x: 0,
-            y: 0,
-            scale,
-            duration: 0,
-          });
-          setCropperParams(this.state);
-        },
+          prevState => ({
+            ...prevState,
+            srcSize,
+            fittedSize,
+            minScale: newScale,
+            loading: false,
+          }),
+          () => {
+            this.imageZoom.current.centerOn({
+              x: 0,
+              y: 0,
+              scale: newScale,
+              duration: 0,
+            });
+            setCropperParams(this.state);
+          },
       );
     });
   };
@@ -177,13 +214,13 @@ class ImageCropper extends PureComponent {
     const { setCropperParams } = this.props;
 
     this.setState(
-      prevState => ({
-        ...prevState,
-        positionX,
-        positionY,
-        scale,
-      }),
-      () => setCropperParams(this.state),
+        prevState => ({
+          ...prevState,
+          positionX,
+          positionY,
+          scale,
+        }),
+        () => setCropperParams(this.state),
     );
   };
 
@@ -193,19 +230,19 @@ class ImageCropper extends PureComponent {
     const imageSrc = { uri: imageUri };
 
     return !loading ? (
-      <ImageZoom
+        <ImageZoom
         ref={this.imageZoom}
-        {...restProps}
-        cropWidth={cropAreaWidth}
-        cropHeight={cropAreaHeight}
-        imageWidth={fittedSize.w}
-        imageHeight={fittedSize.h}
-        minScale={minScale}
-        onMove={this.handleMove}
-      >
+    {...restProps}
+    cropWidth={cropAreaWidth}
+    cropHeight={cropAreaHeight}
+    imageWidth={fittedSize.w}
+    imageHeight={fittedSize.h}
+    minScale={minScale}
+    onMove={this.handleMove}
+        >
         <Image style={{ width: fittedSize.w, height: fittedSize.h }} source={imageSrc} />
-      </ImageZoom>
-    ) : null;
+    </ImageZoom>
+  ) : null;
   }
 }
 
