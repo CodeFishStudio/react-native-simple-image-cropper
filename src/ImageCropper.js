@@ -149,17 +149,18 @@ class ImageCropper extends PureComponent {
         fittedSize.h = w;
       }
 
-      if (cropAreaWidth < cropAreaHeight || cropAreaWidth === cropAreaHeight) {
-        if (actualWidth < actualHeight) {
-          if (fittedSize.h < cropAreaHeight) {
-            scale = Math.ceil((cropAreaHeight / fittedSize.h) * 10) / 10 + 0.0001;
-          } else {
-            scale = Math.ceil((cropAreaWidth / fittedSize.w) * 10) / 10 + 0.0001;
-          }
-        } else {
-          scale = Math.ceil((cropAreaHeight / fittedSize.h) * 10) / 10 + 0.0001;
-        }
-      }
+
+      // if (cropAreaWidth < cropAreaHeight || cropAreaWidth === cropAreaHeight) {
+      //   if (width < height) {
+      //     if (fittedSize.h < cropAreaHeight) {
+      //       scale = Math.ceil((cropAreaHeight / fittedSize.h) * 10) / 10 + 0.0001;
+      //     } else {
+      //       scale = Math.ceil((cropAreaWidth / fittedSize.w) * 10) / 10 + 0.0001;
+      //     }
+      //   } else {
+      //     scale = Math.ceil((cropAreaHeight / fittedSize.h) * 10) / 10 + 0.0001;
+      //   }
+      // }
 
       scale = scale < 1 ? 1.0001 : scale;
 
@@ -182,12 +183,6 @@ class ImageCropper extends PureComponent {
           newScale = maximumWidth / actualHeight;
         }
       }
-
-      console.log('actualWidth', actualWidth);
-      console.log('actualHeight', actualHeight);
-      // console.log('maximumHeight', maximumHeight);
-      console.log('ratio: ', ratio);
-      console.log('newScale: ', newScale);
 
       this.setState(
           prevState => ({
@@ -231,18 +226,18 @@ class ImageCropper extends PureComponent {
 
     return !loading ? (
         <ImageZoom
-        ref={this.imageZoom}
-    {...restProps}
-    cropWidth={cropAreaWidth}
-    cropHeight={cropAreaHeight}
-    imageWidth={fittedSize.w}
-    imageHeight={fittedSize.h}
-    minScale={minScale}
-    onMove={this.handleMove}
+            ref={this.imageZoom}
+            {...restProps}
+            cropWidth={cropAreaWidth}
+            cropHeight={cropAreaHeight}
+            imageWidth={fittedSize.w}
+            imageHeight={fittedSize.h}
+            minScale={0.5}
+            onMove={this.handleMove}
         >
-        <Image style={{ width: fittedSize.w, height: fittedSize.h }} source={imageSrc} />
-    </ImageZoom>
-  ) : null;
+          <Image style={{ width: fittedSize.w, height: fittedSize.h }} source={imageSrc} />
+        </ImageZoom>
+    ) : null;
   }
 }
 
