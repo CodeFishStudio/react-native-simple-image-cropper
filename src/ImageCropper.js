@@ -184,17 +184,12 @@ class ImageCropper extends PureComponent {
                 this.setState({orientation: ratio});
                 calculatedScale = ratio;
 
-                console.log(actualWidth, actualHeight)
-
-                console.log(ratio);
-
                 //Portrait image
                 if (ratio < 1.0) {
                     const maximumHeight = (heightRatio / widthRatio) * actualWidth;
 
                     if (ratio < 0.8) {
                         calculatedScale = actualWidth / maximumHeight;
-                        console.log(calculatedScale);
                     }
                 }
                 //Lanscape image
