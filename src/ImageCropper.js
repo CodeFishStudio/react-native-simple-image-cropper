@@ -160,6 +160,7 @@ class ImageCropper extends PureComponent {
             let calculatedScale = 1;
 
             if(!allowNegativeScale) {
+                this.setState({orientation: 1});
                 if (cropAreaWidth < cropAreaHeight || cropAreaWidth === cropAreaHeight) {
                     if (width < height) {
                         if (fittedSize.h < cropAreaHeight) {
