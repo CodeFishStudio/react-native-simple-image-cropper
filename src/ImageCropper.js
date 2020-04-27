@@ -9,236 +9,261 @@ const window = Dimensions.get('window');
 const w = window.width;
 
 class ImageCropper extends PureComponent {
-  constructor() {
-    super();
-    this.imageZoom = React.createRef();
-  }
-
-  state = {
-    positionX: 0,
-    positionY: 0,
-    width: 0,
-    height: 0,
-    minScale: 1.01,
-    adjustedHeight: 0,
-    loading: true,
-  };
-
-  static propTypes = {
-    imageUri: PropTypes.string.isRequired,
-    setCropperParams: PropTypes.func.isRequired,
-    cropAreaWidth: PropTypes.number,
-    cropAreaHeight: PropTypes.number,
-  };
-
-  static defaultProps = {
-    cropAreaWidth: w,
-    cropAreaHeight: w,
-  };
-
-  static crop = params => {
-    const {
-      imageUri,
-      cropSize,
-      positionX,
-      positionY,
-      cropAreaSize,
-      srcSize,
-      fittedSize,
-      scale,
-    } = params;
-
-    const offset = {
-      x: 0,
-      y: 0,
-    };
-
-    const cropAreaW = cropAreaSize ? cropAreaSize.width : w;
-    const cropAreaH = cropAreaSize ? cropAreaSize.height : w;
-
-    const wScale = cropAreaW / scale;
-    const hScale = cropAreaH / scale;
-
-    const percentCropperAreaW = getPercentDiffNumberFromNumber(wScale, fittedSize.w);
-    const percentRestW = 100 - percentCropperAreaW;
-    const hiddenAreaW = getPercentFromNumber(percentRestW, fittedSize.w);
-
-    const percentCropperAreaH = getPercentDiffNumberFromNumber(hScale, fittedSize.h);
-    const percentRestH = 100 - percentCropperAreaH;
-    const hiddenAreaH = getPercentFromNumber(percentRestH, fittedSize.h);
-
-    const x = hiddenAreaW / 2 - positionX;
-    const y = hiddenAreaH / 2 - positionY;
-
-    offset.x = x <= 0 ? 0 : x;
-    offset.y = y <= 0 ? 0 : y;
-
-    const srcPercentCropperAreaW = getPercentDiffNumberFromNumber(offset.x, fittedSize.w);
-    const srcPercentCropperAreaH = getPercentDiffNumberFromNumber(offset.y, fittedSize.h);
-
-    const offsetW = getPercentFromNumber(srcPercentCropperAreaW, srcSize.w);
-    const offsetH = getPercentFromNumber(srcPercentCropperAreaH, srcSize.h);
-
-    const sizeW = getPercentFromNumber(percentCropperAreaW, srcSize.w);
-    const sizeH = getPercentFromNumber(percentCropperAreaH, srcSize.h);
-
-    offset.x = offsetW;
-    offset.y = offsetH;
-
-    const cropData = {
-      offset,
-      size: {
-        width: sizeW,
-        height: sizeH,
-      },
-      displaySize: {
-        width: cropSize.width,
-        height: cropSize.height,
-      },
-    };
-
-    return new Promise((resolve, reject) =>
-        ImageEditor.cropImage(imageUri, cropData)
-            .then(resolve)
-            .catch(reject),
-    );
-  };
-
-  componentDidMount() {
-    this.init();
-  }
-
-  componentDidUpdate(prevProps) {
-    const { imageUri } = this.props;
-    if (imageUri && prevProps.imageUri !== imageUri) {
-      this.init();
+    constructor() {
+        super();
+        this.imageZoom = React.createRef();
     }
-  }
 
-  init = () => {
-    const { imageUri } = this.props;
+    state = {
+        positionX: 0,
+        positionY: 0,
+        width: 0,
+        height: 0,
+        minScale: 1,
+        adjustedHeight: 0,
+        loading: true,
+        allowNegativeScale: false,
+        isCropping: false,
+        ratio: 1,
+    };
 
-    Image.getSize(imageUri, (width, height) => {
-      const { setCropperParams, cropAreaWidth, cropAreaHeight } = this.props;
+    static propTypes = {
+        imageUri: PropTypes.string.isRequired,
+        setCropperParams: PropTypes.func.isRequired,
+        cropAreaWidth: PropTypes.number,
+        cropAreaHeight: PropTypes.number,
+        allowNegativeScale: PropTypes.bool,
+        isCropping: PropTypes.bool,
+    };
 
-      let actualWidth = 0;
-      let actualHeight = 0;
+    static defaultProps = {
+        cropAreaWidth: w,
+        cropAreaHeight: w,
+        allowNegativeScale: false,
+        isCropping: false,
+    };
 
-      if(this.props.imageWidth && this.props.imageHeight) {
-        actualWidth = this.props.imageWidth;
-        actualHeight = this.props.imageHeight;
-      } else {
-        actualWidth = width;
-        actualHeight = height;
-      }
-
-      const srcSize = { w: width, h: height };
-      const fittedSize = { w: 0, h: 0 };
-      let scale = 1.0001;
-
-      if (actualWidth > actualHeight) {
-        const ratio = w / actualHeight;
-        fittedSize.w = actualWidth * ratio;
-        fittedSize.h = w;
-      } else if (actualWidth < actualHeight) {
-        const ratio = w / actualWidth;
-        fittedSize.w = w;
-        fittedSize.h = actualHeight * ratio;
-      } else if (actualWidth === actualHeight) {
-        fittedSize.w = w;
-        fittedSize.h = w;
-      }
-
-
-      // if (cropAreaWidth < cropAreaHeight || cropAreaWidth === cropAreaHeight) {
-      //   if (width < height) {
-      //     if (fittedSize.h < cropAreaHeight) {
-      //       scale = Math.ceil((cropAreaHeight / fittedSize.h) * 10) / 10 + 0.0001;
-      //     } else {
-      //       scale = Math.ceil((cropAreaWidth / fittedSize.w) * 10) / 10 + 0.0001;
-      //     }
-      //   } else {
-      //     scale = Math.ceil((cropAreaHeight / fittedSize.h) * 10) / 10 + 0.0001;
-      //   }
-      // }
-
-      scale = scale < 1 ? 1.0001 : scale;
-
-      var ratio = actualWidth / actualHeight;
-      var newScale = ratio;
-
-      //Portrait image
-      if (ratio < 1.0) {
-        const maximumHeight = (5 / 4) * actualWidth;
-
-        if (ratio < 0.8) {
-          newScale = actualWidth / maximumHeight;
-        }
-      }
-      //Lanscape image
-      else {
-        const maximumWidth = (4 / 5) * actualHeight;
-
-        if (ratio > 1.25) {
-          newScale = maximumWidth / actualHeight;
-        }
-      }
-
-      this.setState(
-          prevState => ({
-            ...prevState,
+    static crop = params => {
+        const {
+            imageUri,
+            cropSize,
+            positionX,
+            positionY,
+            cropAreaSize,
             srcSize,
             fittedSize,
-            minScale: newScale,
-            loading: false,
-          }),
-          () => {
-            this.imageZoom.current.centerOn({
-              x: 0,
-              y: 0,
-              scale: newScale,
-              duration: 0,
-            });
-            setCropperParams(this.state);
-          },
-      );
-    });
-  };
+            scale,
+        } = params;
 
-  handleMove = ({ positionX, positionY, scale }) => {
-    const { setCropperParams } = this.props;
+        const offset = {
+            x: 0,
+            y: 0,
+        };
 
-    this.setState(
-        prevState => ({
-          ...prevState,
-          positionX,
-          positionY,
-          scale,
-        }),
-        () => setCropperParams(this.state),
-    );
-  };
+        const cropAreaW = cropAreaSize ? cropAreaSize.width : w;
+        const cropAreaH = cropAreaSize ? cropAreaSize.height : w;
 
-  render() {
-    const { loading, fittedSize, minScale } = this.state;
-    const { imageUri, cropAreaWidth, cropAreaHeight, ...restProps } = this.props;
-    const imageSrc = { uri: imageUri };
+        const wScale = cropAreaW / scale;
+        const hScale = cropAreaH / scale;
 
-    return !loading ? (
-        <ImageZoom
-            ref={this.imageZoom}
-            {...restProps}
-            cropWidth={cropAreaWidth}
-            cropHeight={cropAreaHeight}
-            imageWidth={fittedSize.w}
-            imageHeight={fittedSize.h}
-            minScale={0.5}
-            onMove={this.handleMove}
-        >
-          <Image style={{ width: fittedSize.w, height: fittedSize.h }} source={imageSrc} />
-        </ImageZoom>
-    ) : null;
-  }
+        const percentCropperAreaW = getPercentDiffNumberFromNumber(wScale, fittedSize.w);
+        const percentRestW = 100 - percentCropperAreaW;
+        const hiddenAreaW = getPercentFromNumber(percentRestW, fittedSize.w);
+
+        const percentCropperAreaH = getPercentDiffNumberFromNumber(hScale, fittedSize.h);
+        const percentRestH = 100 - percentCropperAreaH;
+        const hiddenAreaH = getPercentFromNumber(percentRestH, fittedSize.h);
+
+        const x = hiddenAreaW / 2 - positionX;
+        const y = hiddenAreaH / 2 - positionY;
+
+        offset.x = x <= 0 ? 0 : x;
+        offset.y = y <= 0 ? 0 : y;
+
+        const srcPercentCropperAreaW = getPercentDiffNumberFromNumber(offset.x, fittedSize.w);
+        const srcPercentCropperAreaH = getPercentDiffNumberFromNumber(offset.y, fittedSize.h);
+
+        const offsetW = getPercentFromNumber(srcPercentCropperAreaW, srcSize.w);
+        const offsetH = getPercentFromNumber(srcPercentCropperAreaH, srcSize.h);
+
+        const sizeW = getPercentFromNumber(percentCropperAreaW, srcSize.w);
+        const sizeH = getPercentFromNumber(percentCropperAreaH, srcSize.h);
+
+        offset.x = offsetW;
+        offset.y = offsetH;
+
+        const cropData = {
+            offset,
+            size: {
+                width: sizeW,
+                height: sizeH,
+            },
+            displaySize: {
+                width: cropSize.width,
+                height: cropSize.height,
+            },
+        };
+
+        return new Promise((resolve, reject) =>
+            ImageEditor.cropImage(imageUri, cropData)
+                .then(resolve)
+                .catch(reject),
+        );
+    };
+
+    componentDidMount() {
+        this.init();
+    }
+
+    componentDidUpdate(prevProps) {
+        const { imageUri, isCropping } = this.props;
+        if (imageUri && prevProps.imageUri !== imageUri || isCropping && prevProps.isCropping !== isCropping) {
+            this.init();
+        }
+    }
+
+    init = () => {
+        const { imageUri, allowNegativeScale, isCropping } = this.props;
+        this.setState({allowNegativeScale, isCropping});
+
+        Image.getSize(imageUri, (width, height) => {
+            const { setCropperParams, cropAreaWidth, cropAreaHeight } = this.props;
+
+            let actualWidth = 0;
+            let actualHeight = 0;
+
+            if(this.props.imageWidth && this.props.imageHeight) {
+                actualWidth = this.props.imageWidth;
+                actualHeight = this.props.imageHeight;
+            } else {
+                actualWidth = width;
+                actualHeight = height;
+            }
+
+            const srcSize = { w: width, h: height };
+            const fittedSize = { w: 0, h: 0 };
+            let scale = 1;
+
+            if (actualWidth > actualHeight) {
+                const ratio = w / actualHeight;
+                fittedSize.w = actualWidth * ratio;
+                fittedSize.h = w;
+            } else if (actualWidth < actualHeight) {
+                const ratio = w / actualWidth;
+                fittedSize.w = w;
+                fittedSize.h = actualHeight * ratio;
+            } else if (actualWidth === actualHeight) {
+                fittedSize.w = w;
+                fittedSize.h = w;
+            }
+
+            let calculatedScale = 1;
+
+            if(!allowNegativeScale) {
+                if (cropAreaWidth < cropAreaHeight || cropAreaWidth === cropAreaHeight) {
+                    if (width < height) {
+                        if (fittedSize.h < cropAreaHeight) {
+                            scale = Math.ceil((cropAreaHeight / fittedSize.h) * 10) / 10 + 0.0001;
+                        } else {
+                            scale = Math.ceil((cropAreaWidth / fittedSize.w) * 10) / 10 + 0.0001;
+                        }
+                    } else {
+                        scale = Math.ceil((cropAreaHeight / fittedSize.h) * 10) / 10 + 0.0001;
+                    }
+                }
+
+                calculatedScale = scale < 1 ? 1.001 : scale;
+            } else {
+
+                const ratio = actualWidth / actualHeight;
+                this.setState({orientation: ratio});
+                calculatedScale = ratio;
+
+                //Portrait image
+                if (ratio < 1.0) {
+                    const maximumHeight = (5 / 4) * actualWidth;
+
+                    if (ratio < 0.8) {
+                        calculatedScale = actualWidth / maximumHeight;
+                    }
+                }
+                //Lanscape image
+                else {
+                    const maximumWidth = (4 / 5) * actualHeight;
+
+                    if (ratio > 1.25) {
+                        calculatedScale = maximumWidth / actualHeight;
+                    }
+                }
+            }
+
+            let centerScale = 1;
+
+            if(!this.state.isCropping){
+                centerScale = calculatedScale;
+            }
+
+
+            this.setState(
+                prevState => ({
+                    ...prevState,
+                    srcSize,
+                    fittedSize,
+                    minScale: calculatedScale,
+                    loading: false,
+                }),
+                () => {
+                    this.imageZoom.current.centerOn({
+                        x: 0,
+                        y: 0,
+                        scale: centerScale,
+                        duration: 0,
+                    });
+                    setCropperParams(this.state);
+                },
+            );
+        });
+    };
+
+    handleMove = ({ positionX, positionY, scale }) => {
+        const { setCropperParams, setIsCropping, isCropping } = this.props;
+        if(isCropping && setIsCropping && scale !== 1){
+            setIsCropping();
+        }
+
+
+        this.setState(
+            prevState => ({
+                ...prevState,
+                positionX,
+                positionY,
+                scale,
+            }),
+            () => setCropperParams(this.state),
+        );
+    };
+
+    render() {
+        const { loading, fittedSize, minScale, allowNegativeScale} = this.state;
+        const { imageUri, cropAreaWidth, cropAreaHeight, ...restProps } = this.props;
+        const imageSrc = { uri: imageUri };
+
+        return !loading ? (
+            <ImageZoom
+                ref={this.imageZoom}
+                {...restProps}
+                cropWidth={cropAreaWidth}
+                cropHeight={cropAreaHeight}
+                imageWidth={fittedSize.w}
+                imageHeight={fittedSize.h}
+                minScale={minScale}
+                enableCenterFocus={!allowNegativeScale}
+                onMove={this.handleMove}
+            >
+                <Image style={{ width: fittedSize.w, height: fittedSize.h }} source={imageSrc} />
+            </ImageZoom>
+        ) : null;
+    }
 }
 
 export default ImageCropper;
