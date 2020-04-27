@@ -32,6 +32,8 @@ class ImageCropper extends PureComponent {
         setCropperParams: PropTypes.func.isRequired,
         cropAreaWidth: PropTypes.number,
         cropAreaHeight: PropTypes.number,
+        widthRatio: PropTypes.number,
+        heightRatio: PropTypes.number,
         allowNegativeScale: PropTypes.bool,
         isCropping: PropTypes.bool,
     };
@@ -39,6 +41,8 @@ class ImageCropper extends PureComponent {
     static defaultProps = {
         cropAreaWidth: w,
         cropAreaHeight: w,
+        widthRatio: 1,
+        heightRatio: 1,
         allowNegativeScale: false,
         isCropping: false,
     };
@@ -127,7 +131,7 @@ class ImageCropper extends PureComponent {
         this.setState({allowNegativeScale, isCropping});
 
         Image.getSize(imageUri, (width, height) => {
-            const { setCropperParams, cropAreaWidth, cropAreaHeight } = this.props;
+            const { setCropperParams, cropAreaWidth, cropAreaHeight, widthRatio, heightRatio } = this.props;
 
             let actualWidth = 0;
             let actualHeight = 0;
@@ -160,7 +164,7 @@ class ImageCropper extends PureComponent {
             let calculatedScale = 1;
 
             if(!allowNegativeScale) {
-                this.setState({orientation: 1});
+                this.setState({orientation: 1})
                 if (cropAreaWidth < cropAreaHeight || cropAreaWidth === cropAreaHeight) {
                     if (width < height) {
                         if (fittedSize.h < cropAreaHeight) {
@@ -180,17 +184,22 @@ class ImageCropper extends PureComponent {
                 this.setState({orientation: ratio});
                 calculatedScale = ratio;
 
+                console.log(actualWidth, actualHeight)
+
+                console.log(ratio);
+
                 //Portrait image
                 if (ratio < 1.0) {
-                    const maximumHeight = (5 / 4) * actualWidth;
+                    const maximumHeight = (heightRatio / widthRatio) * actualWidth;
 
                     if (ratio < 0.8) {
                         calculatedScale = actualWidth / maximumHeight;
+                        console.log(calculatedScale);
                     }
                 }
                 //Lanscape image
                 else {
-                    const maximumWidth = (4 / 5) * actualHeight;
+                    const maximumWidth = (widthRatio/ heightRatio) * actualHeight;
 
                     if (ratio > 1.25) {
                         calculatedScale = maximumWidth / actualHeight;
