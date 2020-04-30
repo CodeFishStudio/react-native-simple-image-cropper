@@ -103,8 +103,8 @@ class ImageCropper extends PureComponent {
                 height: sizeH,
             },
             displaySize: {
-                width: cropSize.width,
-                height: cropSize.height,
+                width: sizeW,
+                height: sizeH,
             },
         };
 
