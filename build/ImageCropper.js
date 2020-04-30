@@ -373,8 +373,8 @@ ImageCropper.crop = function (params) {
     }
 
     return {
-      width: sizeW,
-      height: sizeH
+      width: sizeW > maxSize ? maxSize : sizeW,
+      height: sizeH > maxSize ? maxSize : sizeH
     };
   };
 

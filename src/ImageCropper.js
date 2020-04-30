@@ -111,7 +111,7 @@ class ImageCropper extends PureComponent {
             if(orientation === 2 && sizeH > maxSize){
                 return {width: sizeW / (sizeH/maxSize), height: maxSize };
             }
-            return {width: sizeW, height: sizeH}
+            return {width: sizeW > maxSize ? maxSize : sizeW, height: sizeH > maxSize ? maxSize : sizeH};
         };
 
         const cropData = {
