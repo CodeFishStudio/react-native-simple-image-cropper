@@ -71,10 +71,14 @@ class ImageCropper extends PureComponent {
         const hScale = cropAreaH / scale;
 
         const percentCropperAreaW = getPercentDiffNumberFromNumber(wScale, fittedSize.w);
+        percentCropperAreaW = percentCropperAreaW > 100 ? 100 : percentCropperAreaW;
+
         const percentRestW = 100 - percentCropperAreaW;
         const hiddenAreaW = getPercentFromNumber(percentRestW, fittedSize.w);
 
         const percentCropperAreaH = getPercentDiffNumberFromNumber(hScale, fittedSize.h);
+        percentCropperAreaH = percentCropperAreaH > 100 ? 100 : percentCropperAreaH;
+
         const percentRestH = 100 - percentCropperAreaH;
         const hiddenAreaH = getPercentFromNumber(percentRestH, fittedSize.h);
 
@@ -96,23 +100,34 @@ class ImageCropper extends PureComponent {
         offset.x = offsetW;
         offset.y = offsetH;
 
-        const cropData = {
-            offset,
-            size: {
-                width: sizeW,
-                height: sizeH,
-            },
-            displaySize: {
-                width: sizeW,
-                height: sizeH,
-            },
+        //1 landscape, 2 portrait 0 square
+        const orientation = sizeW > sizeH ? 1 : sizeH > sizeW ? 2 : 0;
+
+        const displaySize = () => {
+            const maxSize = 1000;
+            if(orientation === 1 && sizeW > maxSize){
+                return {width: maxSize, height: sizeH / (sizeW/maxSize) };
+            }
+            if(orientation === 2 && sizeH > maxSize){
+                return {width: sizeW / (sizeH/maxSize), height: maxSize };
+            }
+            return {width: sizeW, height: sizeH}
         };
 
-        return new Promise((resolve, reject) =>
+        const cropData = {
+            offset: offset,
+            size: {
+                width: sizeW,
+                height: sizeH
+            },
+            displaySize: displaySize(),
+        };
+
+        return new Promise((res, rej) => {
             ImageEditor.cropImage(imageUri, cropData)
-                .then(resolve)
-                .catch(reject),
-        );
+                .then(uri => res({...cropData, uri}))
+                .catch(rej)
+        });
     };
 
     componentDidMount() {
