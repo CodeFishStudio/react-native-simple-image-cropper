@@ -19,11 +19,9 @@ var _percentCalculator = require("./helpers/percentCalculator");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _readOnlyError(name) { throw new Error("\"" + name + "\" is read-only"); }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -333,11 +331,11 @@ ImageCropper.crop = function (params) {
   var wScale = cropAreaW / scale;
   var hScale = cropAreaH / scale;
   var percentCropperAreaW = (0, _percentCalculator.getPercentDiffNumberFromNumber)(wScale, fittedSize.w);
-  percentCropperAreaW = (_readOnlyError("percentCropperAreaW"), percentCropperAreaW > 100 ? 100 : percentCropperAreaW);
+  percentCropperAreaW = percentCropperAreaW > 100 ? 100 : percentCropperAreaW;
   var percentRestW = 100 - percentCropperAreaW;
   var hiddenAreaW = (0, _percentCalculator.getPercentFromNumber)(percentRestW, fittedSize.w);
   var percentCropperAreaH = (0, _percentCalculator.getPercentDiffNumberFromNumber)(hScale, fittedSize.h);
-  percentCropperAreaH = (_readOnlyError("percentCropperAreaH"), percentCropperAreaH > 100 ? 100 : percentCropperAreaH);
+  percentCropperAreaH = percentCropperAreaH > 100 ? 100 : percentCropperAreaH;
   var percentRestH = 100 - percentCropperAreaH;
   var hiddenAreaH = (0, _percentCalculator.getPercentFromNumber)(percentRestH, fittedSize.h);
   var x = hiddenAreaW / 2 - positionX;

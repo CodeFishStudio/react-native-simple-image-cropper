@@ -70,13 +70,13 @@ class ImageCropper extends PureComponent {
         const wScale = cropAreaW / scale;
         const hScale = cropAreaH / scale;
 
-        const percentCropperAreaW = getPercentDiffNumberFromNumber(wScale, fittedSize.w);
+        let percentCropperAreaW = getPercentDiffNumberFromNumber(wScale, fittedSize.w);
         percentCropperAreaW = percentCropperAreaW > 100 ? 100 : percentCropperAreaW;
 
         const percentRestW = 100 - percentCropperAreaW;
         const hiddenAreaW = getPercentFromNumber(percentRestW, fittedSize.w);
 
-        const percentCropperAreaH = getPercentDiffNumberFromNumber(hScale, fittedSize.h);
+        let percentCropperAreaH = getPercentDiffNumberFromNumber(hScale, fittedSize.h);
         percentCropperAreaH = percentCropperAreaH > 100 ? 100 : percentCropperAreaH;
 
         const percentRestH = 100 - percentCropperAreaH;
