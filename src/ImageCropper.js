@@ -116,10 +116,7 @@ class ImageCropper extends PureComponent {
 
         const cropData = {
             offset: offset,
-            size: {
-                width: sizeW,
-                height: sizeH
-            },
+            size: displaySize(),
             displaySize: displaySize(),
         };
 
