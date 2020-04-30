@@ -355,8 +355,8 @@ ImageCropper.crop = function (params) {
       height: sizeH
     },
     displaySize: {
-      width: cropSize.width,
-      height: cropSize.height
+      width: sizeW,
+      height: sizeH
     }
   };
   return new Promise(function (resolve, reject) {
