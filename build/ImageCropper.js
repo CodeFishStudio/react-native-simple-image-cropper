@@ -378,7 +378,10 @@ ImageCropper.crop = function (params) {
 
   var cropData = {
     offset: offset,
-    size: displaySize(),
+    size: {
+      width: sizeW,
+      height: sizeH
+    },
     displaySize: displaySize()
   };
   return new Promise(function (res, rej) {
