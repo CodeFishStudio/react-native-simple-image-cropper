@@ -266,7 +266,7 @@ class ImageCropper extends PureComponent {
         }, () => {
             setCropperParams(this.state);
         })
-    }
+    };
 
     handleMove = ({ positionX, positionY, scale }) => {
         const { setCropperParams, setIsCropping } = this.props;

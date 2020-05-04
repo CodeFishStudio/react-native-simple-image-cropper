@@ -81,19 +81,16 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
       adjustedHeight: 0,
       loading: true,
       allowNegativeScale: false,
-      isCropping: false,
       ratio: 1
     };
 
     _this.init = function () {
       var _this$props = _this.props,
           imageUri = _this$props.imageUri,
-          allowNegativeScale = _this$props.allowNegativeScale,
-          isCropping = _this$props.isCropping;
+          allowNegativeScale = _this$props.allowNegativeScale;
 
       _this.setState({
-        allowNegativeScale: allowNegativeScale,
-        isCropping: isCropping
+        allowNegativeScale: allowNegativeScale
       });
 
       _reactNative.Image.getSize(imageUri, function (width, height) {
@@ -183,12 +180,6 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
             }
         }
 
-        var centerScale = 1;
-
-        if (!_this.state.isCropping) {
-          centerScale = calculatedScale;
-        }
-
         _this.setState(function (prevState) {
           return _objectSpread({}, prevState, {
             srcSize: srcSize,
@@ -200,12 +191,39 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
           _this.imageZoom.current.centerOn({
             x: 0,
             y: 0,
-            scale: centerScale,
-            duration: 0
+            scale: calculatedScale,
+            duration: 1
           });
 
           setCropperParams(_this.state);
         });
+      });
+    };
+
+    _this.smartZoom = function () {
+      var setCropperParams = _this.props.setCropperParams;
+      var scale = 1; // If image is zoomed out -> zoom to square = 1
+
+      if (_this.state.scale < 1) {
+        scale = 1;
+      } // If image is squared = 1 -> zoom out to minScale - calculated
+      else if (_this.state.scale === 1) {
+          scale = _this.state.minScale;
+        } // If image is zoomed in > 1 -> zoom to square = 1
+        else {
+            scale = 1;
+          }
+
+      _this.imageZoom.current.centerOn({
+        x: 0,
+        y: 0,
+        scale: scale
+      });
+
+      _this.setState({
+        scale: scale
+      }, function () {
+        setCropperParams(_this.state);
       });
     };
 
@@ -215,12 +233,8 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
           scale = _ref.scale;
       var _this$props3 = _this.props,
           setCropperParams = _this$props3.setCropperParams,
-          setIsCropping = _this$props3.setIsCropping,
-          isCropping = _this$props3.isCropping;
-
-      if (isCropping && setIsCropping && scale !== 1) {
-        setIsCropping();
-      }
+          setIsCropping = _this$props3.setIsCropping;
+      setIsCropping(!!(scale === 1));
 
       _this.setState(function (prevState) {
         return _objectSpread({}, prevState, {
@@ -245,11 +259,9 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
   }, {
     key: "componentDidUpdate",
     value: function componentDidUpdate(prevProps) {
-      var _this$props4 = this.props,
-          imageUri = _this$props4.imageUri,
-          isCropping = _this$props4.isCropping;
+      var imageUri = this.props.imageUri;
 
-      if (imageUri && prevProps.imageUri !== imageUri || isCropping && prevProps.isCropping !== isCropping) {
+      if (imageUri && prevProps.imageUri !== imageUri) {
         this.init();
       }
     }
@@ -262,11 +274,11 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
           minScale = _this$state.minScale,
           allowNegativeScale = _this$state.allowNegativeScale;
 
-      var _this$props5 = this.props,
-          imageUri = _this$props5.imageUri,
-          cropAreaWidth = _this$props5.cropAreaWidth,
-          cropAreaHeight = _this$props5.cropAreaHeight,
-          restProps = _objectWithoutProperties(_this$props5, ["imageUri", "cropAreaWidth", "cropAreaHeight"]);
+      var _this$props4 = this.props,
+          imageUri = _this$props4.imageUri,
+          cropAreaWidth = _this$props4.cropAreaWidth,
+          cropAreaHeight = _this$props4.cropAreaHeight,
+          restProps = _objectWithoutProperties(_this$props4, ["imageUri", "cropAreaWidth", "cropAreaHeight"]);
 
       var imageSrc = {
         uri: imageUri
@@ -297,20 +309,20 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
 ImageCropper.propTypes = {
   imageUri: _propTypes["default"].string.isRequired,
   setCropperParams: _propTypes["default"].func.isRequired,
+  setIsCropping: _propTypes["default"].func,
   cropAreaWidth: _propTypes["default"].number,
   cropAreaHeight: _propTypes["default"].number,
   widthRatio: _propTypes["default"].number,
   heightRatio: _propTypes["default"].number,
-  allowNegativeScale: _propTypes["default"].bool,
-  isCropping: _propTypes["default"].bool
+  allowNegativeScale: _propTypes["default"].bool
 };
 ImageCropper.defaultProps = {
+  setIsCropping: function setIsCropping() {},
   cropAreaWidth: w,
   cropAreaHeight: w,
   widthRatio: 1,
   heightRatio: 1,
-  allowNegativeScale: false,
-  isCropping: false
+  allowNegativeScale: false
 };
 
 ImageCropper.crop = function (params) {
