@@ -23,28 +23,27 @@ class ImageCropper extends PureComponent {
         adjustedHeight: 0,
         loading: true,
         allowNegativeScale: false,
-        isCropping: false,
         ratio: 1,
     };
 
     static propTypes = {
         imageUri: PropTypes.string.isRequired,
         setCropperParams: PropTypes.func.isRequired,
+        setIsCropping: PropTypes.func,
         cropAreaWidth: PropTypes.number,
         cropAreaHeight: PropTypes.number,
         widthRatio: PropTypes.number,
         heightRatio: PropTypes.number,
         allowNegativeScale: PropTypes.bool,
-        isCropping: PropTypes.bool,
     };
 
     static defaultProps = {
+        setIsCropping: () => {},
         cropAreaWidth: w,
         cropAreaHeight: w,
         widthRatio: 1,
         heightRatio: 1,
         allowNegativeScale: false,
-        isCropping: false,
     };
 
     static crop = params => {
@@ -135,15 +134,15 @@ class ImageCropper extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        const { imageUri, isCropping } = this.props;
-        if (imageUri && prevProps.imageUri !== imageUri || isCropping && prevProps.isCropping !== isCropping) {
+        const { imageUri } = this.props;
+        if (imageUri && prevProps.imageUri !== imageUri) {
             this.init();
         }
     }
 
     init = () => {
-        const { imageUri, allowNegativeScale, isCropping } = this.props;
-        this.setState({allowNegativeScale, isCropping});
+        const { imageUri, allowNegativeScale } = this.props;
+        this.setState({allowNegativeScale});
 
         Image.getSize(imageUri, (width, height) => {
             const { setCropperParams, cropAreaWidth, cropAreaHeight, widthRatio, heightRatio } = this.props;
@@ -217,13 +216,6 @@ class ImageCropper extends PureComponent {
                 }
             }
 
-            let centerScale = 1;
-
-            if(!this.state.isCropping){
-                centerScale = calculatedScale;
-            }
-
-
             this.setState(
                 prevState => ({
                     ...prevState,
@@ -236,8 +228,8 @@ class ImageCropper extends PureComponent {
                     this.imageZoom.current.centerOn({
                         x: 0,
                         y: 0,
-                        scale: centerScale,
-                        duration: 0,
+                        scale: calculatedScale,
+                        duration: 1,
                     });
                     setCropperParams(this.state);
                 },
@@ -245,12 +237,41 @@ class ImageCropper extends PureComponent {
         });
     };
 
-    handleMove = ({ positionX, positionY, scale }) => {
-        const { setCropperParams, setIsCropping, isCropping } = this.props;
-        if(isCropping && setIsCropping && scale !== 1){
-            setIsCropping();
+    smartZoom = () => {
+        const { setCropperParams } = this.props;
+
+        var scale = 1;
+
+        // If image is zoomed out -> zoom to square = 1
+        if (this.state.scale < 1) {
+            scale = 1;
+        }
+        // If image is squared = 1 -> zoom out to minScale - calculated
+        else if (this.state.scale === 1) {
+            scale = this.state.minScale
+        }
+        // If image is zoomed in > 1 -> zoom to square = 1
+        else {
+            scale = 1;
         }
 
+        this.imageZoom.current.centerOn({
+            x: 0,
+            y: 0,
+            scale: scale,
+        });
+
+        this.setState({
+            scale
+        }, () => {
+            setCropperParams(this.state);
+        })
+    }
+
+    handleMove = ({ positionX, positionY, scale }) => {
+        const { setCropperParams, setIsCropping } = this.props;
+
+        setIsCropping(!!(scale === 1))
 
         this.setState(
             prevState => ({
