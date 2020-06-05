@@ -166,8 +166,14 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
 
           calculatedScale = scale < 1 ? 1.001 : scale;
         } else if (lockedCropperRatio) {
+          var croppedRatio = cropAreaWidth / cropAreaHeight;
+
           if (orientation === lockedCropperRatio.orientation) {
-            if (orientation === 1) calculatedScale = cropAreaHeight / fittedSize.h;else calculatedScale = cropAreaWidth / fittedSize.w;
+            if (croppedRatio >= ratio) {
+              calculatedScale = cropAreaHeight / fittedSize.h;
+            } else {
+              calculatedScale = cropAreaWidth / fittedSize.w;
+            }
           } else {
             calculatedScale = 1;
           }
