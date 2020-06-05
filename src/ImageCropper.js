@@ -21,7 +21,7 @@ class ImageCropper extends PureComponent {
         height: 0,
         minScale: 1,
         adjustedHeight: 0,
-        loading: true,
+        opacity: 0,
         allowNegativeScale: false,
         ratio: 1,
     };
@@ -247,7 +247,6 @@ class ImageCropper extends PureComponent {
                     srcSize,
                     fittedSize,
                     minScale: calculatedScale,
-                    loading: false,
                 }),
                 () => {
                     this.imageZoom.current.centerOn({
@@ -257,6 +256,7 @@ class ImageCropper extends PureComponent {
                         duration: 1,
                     });
                     setCropperParams(this.state);
+                    this.setState({opacity: 1});
                 },
             );
         });
@@ -310,11 +310,11 @@ class ImageCropper extends PureComponent {
     };
 
     render() {
-        const { loading, fittedSize, minScale, allowNegativeScale} = this.state;
+        const { opacity, fittedSize, minScale, allowNegativeScale} = this.state;
         const { imageUri, cropAreaWidth, cropAreaHeight, isDisabled, ...restProps } = this.props;
         const imageSrc = { uri: imageUri };
 
-        return !loading ? (
+        return (
             <ImageZoom
                 ref={this.imageZoom}
                 {...restProps}
@@ -326,9 +326,9 @@ class ImageCropper extends PureComponent {
                 enableCenterFocus={!allowNegativeScale}
                 onMove={isDisabled ? null : this.handleMove}
             >
-                <Image style={{ width: fittedSize.w, height: fittedSize.h }} source={imageSrc} />
+                <Image style={{ width: fittedSize.w, height: fittedSize.h, opacity}} source={imageSrc} />
             </ImageZoom>
-        ) : null;
+        );
     }
 }
 
