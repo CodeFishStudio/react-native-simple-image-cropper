@@ -169,10 +169,14 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
           var croppedRatio = cropAreaWidth / cropAreaHeight;
 
           if (orientation === lockedCropperRatio.orientation) {
-            if (croppedRatio >= ratio) {
+            if (croppedRatio < ratio) {
+              calculatedScale = 1;
+            } else if (orientation === 1) {
               calculatedScale = cropAreaHeight / fittedSize.h;
-            } else {
+            } else if (orientation === 2) {
               calculatedScale = cropAreaWidth / fittedSize.w;
+            } else {
+              calculatedScale = 1;
             }
           } else {
             calculatedScale = 1;
