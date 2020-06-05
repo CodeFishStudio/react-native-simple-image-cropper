@@ -99,7 +99,8 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
             cropAreaWidth = _this$props2.cropAreaWidth,
             cropAreaHeight = _this$props2.cropAreaHeight,
             widthRatio = _this$props2.widthRatio,
-            heightRatio = _this$props2.heightRatio;
+            heightRatio = _this$props2.heightRatio,
+            lockedCropperRatio = _this$props2.lockedCropperRatio;
         var actualWidth = 0;
         var actualHeight = 0;
 
@@ -122,22 +123,31 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
         var scale = 1;
 
         if (actualWidth > actualHeight) {
-          var ratio = w / actualHeight;
-          fittedSize.w = actualWidth * ratio;
+          var _ratio = w / actualHeight;
+
+          fittedSize.w = actualWidth * _ratio;
           fittedSize.h = w;
         } else if (actualWidth < actualHeight) {
-          var _ratio = w / actualWidth;
+          var _ratio2 = w / actualWidth;
 
           fittedSize.w = w;
-          fittedSize.h = actualHeight * _ratio;
+          fittedSize.h = actualHeight * _ratio2;
         } else if (actualWidth === actualHeight) {
           fittedSize.w = w;
           fittedSize.h = w;
         }
 
-        var calculatedScale = 1;
+        var ratio = actualWidth / actualHeight; //1 landscape, 2 portrait 0 square
 
-        if (!allowNegativeScale) {
+        var orientation = ratio > 1 ? 1 : ratio < 1 ? 2 : 0;
+
+        _this.setState({
+          orientation: orientation
+        });
+
+        var calculatedScale = ratio;
+
+        if (!allowNegativeScale || orientation === 0) {
           _this.setState({
             orientation: 1
           });
@@ -155,26 +165,25 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
           }
 
           calculatedScale = scale < 1 ? 1.001 : scale;
+        } else if (lockedCropperRatio) {
+          if (orientation === lockedCropperRatio.orientation) {
+            if (orientation === 1) calculatedScale = cropAreaHeight / fittedSize.h;else calculatedScale = cropAreaWidth / fittedSize.w;
+          } else {
+            calculatedScale = 1;
+          }
         } else {
-          var _ratio2 = actualWidth / actualHeight;
-
-          _this.setState({
-            orientation: _ratio2
-          });
-
-          calculatedScale = _ratio2; //Portrait image
-
-          if (_ratio2 < 1.0) {
+          //Portrait image
+          if (ratio < 1.0) {
             var maximumHeight = heightRatio / widthRatio * actualWidth;
 
-            if (_ratio2 < 0.8) {
+            if (ratio < 0.8) {
               calculatedScale = actualWidth / maximumHeight;
             }
           } //Lanscape image
           else {
               var maximumWidth = widthRatio / heightRatio * actualHeight;
 
-              if (_ratio2 > 1.25) {
+              if (ratio > 1.25) {
                 calculatedScale = maximumWidth / actualHeight;
               }
             }
@@ -278,7 +287,8 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
           imageUri = _this$props4.imageUri,
           cropAreaWidth = _this$props4.cropAreaWidth,
           cropAreaHeight = _this$props4.cropAreaHeight,
-          restProps = _objectWithoutProperties(_this$props4, ["imageUri", "cropAreaWidth", "cropAreaHeight"]);
+          isDisabled = _this$props4.isDisabled,
+          restProps = _objectWithoutProperties(_this$props4, ["imageUri", "cropAreaWidth", "cropAreaHeight", "isDisabled"]);
 
       var imageSrc = {
         uri: imageUri
@@ -292,7 +302,7 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
         imageHeight: fittedSize.h,
         minScale: minScale,
         enableCenterFocus: !allowNegativeScale,
-        onMove: this.handleMove
+        onMove: isDisabled ? null : this.handleMove
       }), /*#__PURE__*/_react["default"].createElement(_reactNative.Image, {
         style: {
           width: fittedSize.w,
@@ -314,7 +324,9 @@ ImageCropper.propTypes = {
   cropAreaHeight: _propTypes["default"].number,
   widthRatio: _propTypes["default"].number,
   heightRatio: _propTypes["default"].number,
-  allowNegativeScale: _propTypes["default"].bool
+  allowNegativeScale: _propTypes["default"].bool,
+  lockedCropperRatio: _propTypes["default"].object,
+  isDisabled: _propTypes["default"].bool
 };
 ImageCropper.defaultProps = {
   setIsCropping: function setIsCropping() {},
@@ -322,7 +334,9 @@ ImageCropper.defaultProps = {
   cropAreaHeight: w,
   widthRatio: 1,
   heightRatio: 1,
-  allowNegativeScale: false
+  allowNegativeScale: false,
+  isDisabled: false,
+  lockedCropperRatio: null
 };
 
 ImageCropper.crop = function (params) {

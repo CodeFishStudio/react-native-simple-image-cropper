@@ -35,6 +35,8 @@ class ImageCropper extends PureComponent {
         widthRatio: PropTypes.number,
         heightRatio: PropTypes.number,
         allowNegativeScale: PropTypes.bool,
+        lockedCropperRatio: PropTypes.object,
+        isDisabled: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -44,6 +46,8 @@ class ImageCropper extends PureComponent {
         widthRatio: 1,
         heightRatio: 1,
         allowNegativeScale: false,
+        isDisabled: false,
+        lockedCropperRatio: null,
     };
 
     static crop = params => {
@@ -145,7 +149,7 @@ class ImageCropper extends PureComponent {
         this.setState({allowNegativeScale});
 
         Image.getSize(imageUri, (width, height) => {
-            const { setCropperParams, cropAreaWidth, cropAreaHeight, widthRatio, heightRatio } = this.props;
+            const { setCropperParams, cropAreaWidth, cropAreaHeight, widthRatio, heightRatio, lockedCropperRatio } = this.props;
 
             let actualWidth = 0;
             let actualHeight = 0;
@@ -175,9 +179,14 @@ class ImageCropper extends PureComponent {
                 fittedSize.h = w;
             }
 
-            let calculatedScale = 1;
+            const ratio = actualWidth / actualHeight;
 
-            if(!allowNegativeScale) {
+            //1 landscape, 2 portrait 0 square
+            const orientation = ratio > 1 ? 1 : ratio < 1 ? 2 : 0;
+            this.setState({orientation: orientation});
+            let calculatedScale = ratio;
+
+            if(!allowNegativeScale || orientation === 0) {
                 this.setState({orientation: 1})
                 if (cropAreaWidth < cropAreaHeight || cropAreaWidth === cropAreaHeight) {
                     if (width < height) {
@@ -192,11 +201,17 @@ class ImageCropper extends PureComponent {
                 }
 
                 calculatedScale = scale < 1 ? 1.001 : scale;
-            } else {
+            } else if(lockedCropperRatio) {
+                if(orientation === lockedCropperRatio.orientation){
+                    if(orientation === 1) calculatedScale = cropAreaHeight / fittedSize.h;
+                    else calculatedScale = cropAreaWidth / fittedSize.w;
+                } else {
+                    calculatedScale = 1;
+                }
 
-                const ratio = actualWidth / actualHeight;
-                this.setState({orientation: ratio});
-                calculatedScale = ratio;
+
+
+            } else {
 
                 //Portrait image
                 if (ratio < 1.0) {
@@ -286,7 +301,7 @@ class ImageCropper extends PureComponent {
 
     render() {
         const { loading, fittedSize, minScale, allowNegativeScale} = this.state;
-        const { imageUri, cropAreaWidth, cropAreaHeight, ...restProps } = this.props;
+        const { imageUri, cropAreaWidth, cropAreaHeight, isDisabled, ...restProps } = this.props;
         const imageSrc = { uri: imageUri };
 
         return !loading ? (
@@ -299,7 +314,7 @@ class ImageCropper extends PureComponent {
                 imageHeight={fittedSize.h}
                 minScale={minScale}
                 enableCenterFocus={!allowNegativeScale}
-                onMove={this.handleMove}
+                onMove={isDisabled ? null : this.handleMove}
             >
                 <Image style={{ width: fittedSize.w, height: fittedSize.h }} source={imageSrc} />
             </ImageZoom>
