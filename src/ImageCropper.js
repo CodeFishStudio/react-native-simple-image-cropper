@@ -21,7 +21,7 @@ class ImageCropper extends PureComponent {
         height: 0,
         minScale: 1,
         adjustedHeight: 0,
-        opacity: 0,
+        loading: true,
         allowNegativeScale: false,
         ratio: 1,
     };
@@ -46,8 +46,8 @@ class ImageCropper extends PureComponent {
         widthRatio: 1,
         heightRatio: 1,
         allowNegativeScale: false,
+        loading: false,
         isDisabled: false,
-        lockedCropperRatio: null,
     };
 
     static crop = params => {
@@ -247,6 +247,7 @@ class ImageCropper extends PureComponent {
                     srcSize,
                     fittedSize,
                     minScale: calculatedScale,
+                    loading: false,
                 }),
                 () => {
                     this.imageZoom.current.centerOn({
@@ -256,7 +257,6 @@ class ImageCropper extends PureComponent {
                         duration: 1,
                     });
                     setCropperParams(this.state);
-                    this.setState({opacity: 1});
                 },
             );
         });
@@ -310,11 +310,11 @@ class ImageCropper extends PureComponent {
     };
 
     render() {
-        const { opacity, fittedSize, minScale, allowNegativeScale} = this.state;
+        const {loading, fittedSize, minScale, allowNegativeScale} = this.state;
         const { imageUri, cropAreaWidth, cropAreaHeight, isDisabled, ...restProps } = this.props;
         const imageSrc = { uri: imageUri };
 
-        return (
+        return !loading ? (
             <ImageZoom
                 ref={this.imageZoom}
                 {...restProps}
@@ -328,9 +328,9 @@ class ImageCropper extends PureComponent {
                 pinchToZoom={!isDisabled}
                 onMove={isDisabled ? null : this.handleMove}
             >
-                <Image style={{ width: fittedSize.w, height: fittedSize.h, opacity}} source={imageSrc} />
+                <Image style={{ width: fittedSize.w, height: fittedSize.h}} source={imageSrc} />
             </ImageZoom>
-        );
+        ) : null;
     }
 }
 
