@@ -324,6 +324,8 @@ class ImageCropper extends PureComponent {
                 imageHeight={fittedSize.h}
                 minScale={minScale}
                 enableCenterFocus={!allowNegativeScale}
+                panToMove={!isDisabled}
+                pinchToZoom={!isDisabled}
                 onMove={isDisabled ? null : this.handleMove}
             >
                 <Image style={{ width: fittedSize.w, height: fittedSize.h }} source={imageSrc} />
