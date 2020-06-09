@@ -315,6 +315,8 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
         imageHeight: fittedSize.h,
         minScale: minScale,
         enableCenterFocus: !allowNegativeScale,
+        panToMove: !isDisabled,
+        pinchToZoom: !isDisabled,
         onMove: isDisabled ? null : this.handleMove
       }), /*#__PURE__*/_react["default"].createElement(_reactNative.Image, {
         style: {
