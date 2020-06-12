@@ -100,7 +100,8 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
             cropAreaHeight = _this$props2.cropAreaHeight,
             widthRatio = _this$props2.widthRatio,
             heightRatio = _this$props2.heightRatio,
-            lockedCropperRatio = _this$props2.lockedCropperRatio;
+            lockedCropperRatio = _this$props2.lockedCropperRatio,
+            isCropping = _this$props2.isCropping;
         var actualWidth = 0;
         var actualHeight = 0;
 
@@ -169,7 +170,7 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
           var croppedRatio = cropAreaWidth / cropAreaHeight;
 
           if (orientation === lockedCropperRatio.orientation) {
-            if (croppedRatio < ratio) {
+            if (croppedRatio < ratio && orientation === 1) {
               calculatedScale = 1;
             } else if (orientation === 1) {
               calculatedScale = cropAreaHeight / fittedSize.h;
@@ -210,7 +211,7 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
           _this.imageZoom.current.centerOn({
             x: 0,
             y: 0,
-            scale: calculatedScale,
+            scale: isCropping ? 1 : calculatedScale,
             duration: 1
           });
 
@@ -338,7 +339,8 @@ ImageCropper.propTypes = {
   heightRatio: _propTypes["default"].number,
   allowNegativeScale: _propTypes["default"].bool,
   lockedCropperRatio: _propTypes["default"].object,
-  isDisabled: _propTypes["default"].bool
+  isDisabled: _propTypes["default"].bool,
+  isCropping: _propTypes["default"].bool
 };
 ImageCropper.defaultProps = {
   setIsCropping: function setIsCropping() {},
@@ -348,7 +350,8 @@ ImageCropper.defaultProps = {
   heightRatio: 1,
   allowNegativeScale: false,
   loading: false,
-  isDisabled: false
+  isDisabled: false,
+  isCropping: false
 };
 
 ImageCropper.crop = function (params) {

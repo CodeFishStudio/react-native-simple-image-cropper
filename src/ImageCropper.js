@@ -37,6 +37,7 @@ class ImageCropper extends PureComponent {
         allowNegativeScale: PropTypes.bool,
         lockedCropperRatio: PropTypes.object,
         isDisabled: PropTypes.bool,
+        isCropping: PropTypes.bool
     };
 
     static defaultProps = {
@@ -48,6 +49,7 @@ class ImageCropper extends PureComponent {
         allowNegativeScale: false,
         loading: false,
         isDisabled: false,
+        isCropping: false
     };
 
     static crop = params => {
@@ -149,7 +151,7 @@ class ImageCropper extends PureComponent {
         this.setState({allowNegativeScale});
 
         Image.getSize(imageUri, (width, height) => {
-            const { setCropperParams, cropAreaWidth, cropAreaHeight, widthRatio, heightRatio, lockedCropperRatio } = this.props;
+            const { setCropperParams, cropAreaWidth, cropAreaHeight, widthRatio, heightRatio, lockedCropperRatio, isCropping } = this.props;
 
             let actualWidth = 0;
             let actualHeight = 0;
@@ -206,7 +208,7 @@ class ImageCropper extends PureComponent {
 
 
                 if(orientation === lockedCropperRatio.orientation){
-                    if(croppedRatio < ratio) {
+                    if(croppedRatio < ratio && orientation === 1) {
                         calculatedScale = 1;
                     } else if (orientation === 1) {
                         calculatedScale = cropAreaHeight / fittedSize.h;
@@ -253,7 +255,7 @@ class ImageCropper extends PureComponent {
                     this.imageZoom.current.centerOn({
                         x: 0,
                         y: 0,
-                        scale: calculatedScale,
+                        scale: isCropping ? 1 : calculatedScale,
                         duration: 1,
                     });
                     setCropperParams(this.state);
