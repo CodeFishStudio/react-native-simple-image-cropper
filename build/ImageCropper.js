@@ -320,7 +320,7 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
         panToMove: !isDisabled,
         pinchToZoom: !isDisabled,
         onMove: isDisabled ? null : this.handleMove
-      }), !loading && /*#__PURE__*/_react["default"].createElement(_reactNative.Image, {
+      }), /*#__PURE__*/_react["default"].createElement(_reactNative.Image, {
         style: {
           width: fittedSize.w,
           height: fittedSize.h

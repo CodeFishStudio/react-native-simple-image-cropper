@@ -333,7 +333,7 @@ class ImageCropper extends PureComponent {
                 pinchToZoom={!isDisabled}
                 onMove={isDisabled ? null : this.handleMove}
             >
-                {!loading && (<Image style={{ width: fittedSize.w, height: fittedSize.h}} source={imageSrc} />)}
+                <Image style={{ width: fittedSize.w, height: fittedSize.h}} source={imageSrc} />
             </ImageZoom>
         );
     }
