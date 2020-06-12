@@ -269,15 +269,12 @@ class ImageCropper extends PureComponent {
 
         var scale = 1;
 
-        // If image is zoomed out -> zoom to square = 1
-        if (this.state.scale < 1) {
+        if (this.imageZoom.current.scale < 1) {
             scale = 1;
-        }
-        // If image is squared = 1 -> zoom out to minScale - calculated
-        else if (this.state.scale === 1) {
-            scale = this.state.minScale
-        }
-        // If image is zoomed in > 1 -> zoom to square = 1
+        } // If image is squared = 1 -> zoom out to minScale - calculated
+        else if (this.imageZoom.current.scale === 1) {
+            scale = this.state.minScale;
+        } // If image is zoomed in > 1 -> zoom to square = 1
         else {
             scale = 1;
         }

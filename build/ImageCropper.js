@@ -222,12 +222,12 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
 
     _this.smartZoom = function () {
       var setCropperParams = _this.props.setCropperParams;
-      var scale = 1; // If image is zoomed out -> zoom to square = 1
+      var scale = 1;
 
-      if (_this.state.scale < 1) {
+      if (_this.imageZoom.current.scale < 1) {
         scale = 1;
       } // If image is squared = 1 -> zoom out to minScale - calculated
-      else if (_this.state.scale === 1) {
+      else if (_this.imageZoom.current.scale === 1) {
           scale = _this.state.minScale;
         } // If image is zoomed in > 1 -> zoom to square = 1
         else {
