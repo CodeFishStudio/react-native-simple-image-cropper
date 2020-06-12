@@ -80,6 +80,7 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
       minScale: 1,
       adjustedHeight: 0,
       loading: true,
+      hide: true,
       allowNegativeScale: false,
       ratio: 1
     };
@@ -91,7 +92,7 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
 
       _this.setState({
         allowNegativeScale: allowNegativeScale,
-        loading: true
+        hide: true
       });
 
       _reactNative.Image.getSize(imageUri, function (width, height) {
@@ -205,7 +206,8 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
           return _objectSpread({}, prevState, {
             srcSize: srcSize,
             fittedSize: fittedSize,
-            minScale: calculatedScale
+            minScale: calculatedScale,
+            loading: false
           });
         }, function () {
           _this.imageZoom.current.centerOn({
@@ -218,7 +220,7 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
           setCropperParams(_this.state);
 
           _this.setState({
-            loading: false
+            hide: false
           });
         });
       });
@@ -308,7 +310,7 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
       var imageSrc = {
         uri: imageUri
       };
-      return /*#__PURE__*/_react["default"].createElement(_reactNativeImagePanZoom["default"], _extends({
+      return !loading ? /*#__PURE__*/_react["default"].createElement(_reactNativeImagePanZoom["default"], _extends({
         ref: this.imageZoom
       }, restProps, {
         cropWidth: cropAreaWidth,
@@ -320,13 +322,13 @@ var ImageCropper = /*#__PURE__*/function (_PureComponent) {
         panToMove: !isDisabled,
         pinchToZoom: !isDisabled,
         onMove: isDisabled ? null : this.handleMove
-      }), /*#__PURE__*/_react["default"].createElement(_reactNative.Image, {
+      }), !hide && /*#__PURE__*/_react["default"].createElement(_reactNative.Image, {
         style: {
           width: fittedSize.w,
           height: fittedSize.h
         },
         source: imageSrc
-      }));
+      })) : null;
     }
   }]);
 
