@@ -148,7 +148,11 @@ class ImageCropper extends PureComponent {
 
     init = () => {
         const { imageUri, allowNegativeScale } = this.props;
-        this.setState({allowNegativeScale});
+
+        this.setState({
+            allowNegativeScale,
+            loading: true
+        });
 
         Image.getSize(imageUri, (width, height) => {
             const { setCropperParams, cropAreaWidth, cropAreaHeight, widthRatio, heightRatio, lockedCropperRatio, isCropping } = this.props;
@@ -156,7 +160,7 @@ class ImageCropper extends PureComponent {
             let actualWidth = 0;
             let actualHeight = 0;
 
-            if(this.props.imageWidth && this.props.imageHeight) {
+            if (this.props.imageWidth && this.props.imageHeight) {
                 actualWidth = this.props.imageWidth;
                 actualHeight = this.props.imageHeight;
             } else {
@@ -188,7 +192,7 @@ class ImageCropper extends PureComponent {
             this.setState({orientation: orientation});
             let calculatedScale = ratio;
 
-            if(!allowNegativeScale || orientation === 0) {
+            if (!allowNegativeScale || orientation === 0) {
                 this.setState({orientation: 1})
                 if (cropAreaWidth < cropAreaHeight || cropAreaWidth === cropAreaHeight) {
                     if (width < height) {
@@ -249,7 +253,6 @@ class ImageCropper extends PureComponent {
                     srcSize,
                     fittedSize,
                     minScale: calculatedScale,
-                    loading: false,
                 }),
                 () => {
                     this.imageZoom.current.centerOn({
@@ -259,6 +262,9 @@ class ImageCropper extends PureComponent {
                         disableAnimation: true,
                     });
                     setCropperParams(this.state);
+                    this.setState({
+                        loading: false
+                    })
                 },
             );
         });
@@ -313,7 +319,7 @@ class ImageCropper extends PureComponent {
         const { imageUri, cropAreaWidth, cropAreaHeight, isDisabled, ...restProps } = this.props;
         const imageSrc = { uri: imageUri };
 
-        return !loading ? (
+        return (
             <ImageZoom
                 ref={this.imageZoom}
                 {...restProps}
@@ -327,9 +333,9 @@ class ImageCropper extends PureComponent {
                 pinchToZoom={!isDisabled}
                 onMove={isDisabled ? null : this.handleMove}
             >
-                <Image style={{ width: fittedSize.w, height: fittedSize.h}} source={imageSrc} />
+                {!loading && (<Image style={{ width: fittedSize.w, height: fittedSize.h}} source={imageSrc} />)}
             </ImageZoom>
-        ) : null;
+        );
     }
 }
 
