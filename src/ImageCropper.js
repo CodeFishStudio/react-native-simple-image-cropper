@@ -256,7 +256,7 @@ class ImageCropper extends PureComponent {
                         x: 0,
                         y: 0,
                         scale: isCropping ? 1 : calculatedScale,
-                        duration: 1,
+                        disableAnimation: true,
                     });
                     setCropperParams(this.state);
                 },
